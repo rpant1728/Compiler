@@ -1,6 +1,7 @@
 #include <stdio.h>
 
-char  *Names[] = { "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7" };   
+char  *Names[] = { "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7" };
+char  *Registers[] = { "AL", "AH", "BL", "BH", "CL", "CH", "DL", "DH" };
 char  **Namep  = Names;   
    
 char *newname(){   
@@ -16,4 +17,4 @@ void freename(char *s){
         *--Namep = s;   
     else   
         fprintf(stderr, "%d: (Internal error) Name stack underflow\n", yylineno);   
-}   
+}

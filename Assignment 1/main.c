@@ -3,6 +3,5 @@
 #include "code_gen.c"
 
 void main(){
-	// lex();
 	statements();
 }

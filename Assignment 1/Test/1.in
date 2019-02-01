@@ -1,5 +1,5 @@
+while a<3 do
 begin
-    if a>3 then 
-        while a<3 do
-            a := a+1;
+    a := a+1;
+    b := b+1;
 end
