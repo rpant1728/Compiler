@@ -23,21 +23,15 @@ void statement(){
     var[i] = '\0';
     if(match(NUM_OR_ID)){
         advance();
-        if(match(COL)){
+        if(match(ASS)){
             advance();
-            if(!match(EQU)){
-                fprintf(stderr, "%d: ':=' expected\n", yylineno);
+            tempvar = expr1();
+            if(!match(SEMI)){
+                fprintf(stderr, "%d: ';' expected\n", yylineno);
             }
-            else{ 
+            else{
+                printf("    %s <- %s", var, tempvar);
                 advance();
-                tempvar = expr1();
-                if(!match(SEMI)){
-                    fprintf(stderr, "%d: ';' expected\n", yylineno);
-                }
-                else{
-                    printf("    %s <- %s", var, tempvar);
-                    advance();
-                }
             }
         }        
     }
@@ -48,7 +42,7 @@ void statement(){
             advance();
             printf("while (%s) do { \n", tempvar);
             statement();
-            printf("\n}\n");
+            printf("\n}");
         }
     }
     if(match(IF)){
@@ -58,7 +52,7 @@ void statement(){
             advance();
             printf("if (%s) then { \n", tempvar);
             statement();
-            printf("\n}\n");
+            printf("\n}");
         }
     }
     if(match(BEG)){

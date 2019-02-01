@@ -18,7 +18,6 @@
 #define END 17	    /* end */
 #define NUM_OR_ID 18	/* Decimal Number or Identifier */
 #define ASS 19      /* assignment operator */
-#define COL 20
 
 extern char *yytext;
 extern int yyleng;
