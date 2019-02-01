@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-char *yytext = "a:=1+2*3;~"; /* Lexeme (not '\0' terminated) */
+char *yytext = "begin if a>3 then while a<3 do a:=a+1; end~"; /* Lexeme (not '\0' terminated) */
 int yyleng = 0;    /* Lexeme length */
 int yylineno = 0;  /* Input line number */
 
@@ -14,6 +14,7 @@ int lex(void){
     current = yytext + yyleng; /* Skip current lexeme */
 
     while(1){                 /* Get the next one */
+        // printf("%s", yytext);
         
         // while(!*current ){
         //     /* Get new lines, skipping any leading
@@ -26,8 +27,8 @@ int lex(void){
         //         return EOI;
         //     }
         //     ++yylineno;
-        //     while(isspace(*current))
-        //         ++current;
+        while(isspace(*current))
+            ++current;
         // }
         for(; *current; ++current){ /* Get the next token */
             
@@ -72,13 +73,13 @@ int lex(void){
                         i++;
                     }
                     arr[i] = '\0';
-                    printf("%s \n", arr);
-                    if(strcmp(arr, ":=") == 0)
+                    if(strcmp(arr, ":=") == 0){
+                        yyleng = 2;
                         return ASS;
+                    }
                     // fprintf(stderr, "Syntax error\n", *current);
                 }
                 else{
-                    
                     char arr[20];
                     int i=0;
                     while(isalnum(*current)){
@@ -87,20 +88,36 @@ int lex(void){
                         i++;
                     }
                     arr[i] = '\0';
-                    if(strcmp(arr, "if") == 0)
+                    // printf("%s\n", arr);
+                    if(strcmp(arr, "if") == 0){
+                        yyleng = 2;
                         return IF;
-                    if(strcmp(arr, "then") == 0)
+                    }
+                    if(strcmp(arr, "then") == 0){
+                        yyleng = 4;
                         return THEN;
-                    if(strcmp(arr, "else") == 0)
+                    }
+                    if(strcmp(arr, "else") == 0){
+                        yyleng = 4;
                         return ELSE;
-                    if(strcmp(arr, "while") == 0)
+                    }
+                    if(strcmp(arr, "while") == 0){
+                        yyleng = 5;
                         return WHILE;
-                    if(strcmp(arr, "do") == 0)
+                    }  
+                    if(strcmp(arr, "do") == 0){
+                        yyleng = 2;
                         return DO;
-                    if(strcmp(arr, "begin") == 0)
+                    }
+                    if(strcmp(arr, "begin") == 0){
+                        yyleng = 5;
                         return BEG;
-                    if(strcmp(arr, "end") == 0)
-                        return IF;
+                    }
+                    if(strcmp(arr, "end") == 0){
+                        yyleng = 3;
+                        return END;
+                    }
+                    // printf("cfghjkh");
                     yyleng = current - yytext;
                     return NUM_OR_ID;
                 }
@@ -118,10 +135,12 @@ int match(int token){
     /* Return true if "token" matches the current lookahead symbol. */
     if(Lookahead == -1) 
         Lookahead = lex();
+        // printf("%d", Lookahead);
     return token == Lookahead;
 }
 
 void advance(void){
 /* Advance the lookahead to the next input symbol. */
     Lookahead = lex();
+    // printf("%d", Lookahead);
 }

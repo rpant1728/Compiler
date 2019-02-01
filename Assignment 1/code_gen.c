@@ -1,27 +1,28 @@
 #include <stdio.h>
 #include "lex.c"
 #include "name.c"
+#include "code_gen.h"
 
-char *factor (void);
-char *term (void);
-char *expression (void);
-char *expr1(void);
-
-extern char *newname();
-extern void freename(char *name);
+void statements(){
+    /*  statements -> statement statements | statement  */
+    char *tempvar;
+    while(!match(EOI)){
+        statement();
+    }
+    return;
+}
 
 void statement(){
-    char *tempvar;
+    char *tempvar, *tempvar1;
+    char var[100];
+    int i=0;
+    while(i<yyleng){
+        var[i] = *(yytext+i);
+        i++;
+    }
+    var[i] = '\0';
     if(match(NUM_OR_ID)){
-        char var[100];
-        int i=0;
-        while(i<yyleng){
-            var[i] = *(yytext+i);
-            i++;
-        }
-        var[i] = '\0';
         advance();
-        // printf("%c", *(yytext));
         if(match(COL)){
             advance();
             if(!match(EQU)){
@@ -34,33 +35,42 @@ void statement(){
                     fprintf(stderr, "%d: ';' expected\n", yylineno);
                 }
                 else{
-                    printf("%s <- %s", var, tempvar);
+                    printf("    %s <- %s", var, tempvar);
                     advance();
                 }
             }
-        }
-        else{
+        }        
+    }
+    if(match(WHILE)){
+        advance();
+        tempvar = expr1();
+        if(match(DO)){
             advance();
-            tempvar = expr1();
-            if(!match(SEMI)){
-                fprintf(stderr, "%d: ';' expected\n", yylineno);
-            }
-            else{
-                printf("%s <- %s", var, tempvar);
-                advance();
-            }
+            printf("while (%s) do { \n", tempvar);
+            statement();
+            printf("\n}\n");
         }
     }
-}
-
-void statements(){
-    /*  statements -> statement statements | statement  */
-    char *tempvar;
-    // int i = 0;
-    while(!match(EOI)){
-        statement();
+    if(match(IF)){
+        advance();
+        tempvar = expr1();
+        if(match(THEN)){
+            advance();
+            printf("if (%s) then { \n", tempvar);
+            statement();
+            printf("\n}\n");
+        }
     }
-    return;
+    if(match(BEG)){
+        advance();
+        printf("begin { \n");
+        // stmt_list();
+        while (!match(END)){
+            statement();
+        }
+        printf("\n} end \n");
+        advance();           
+    }
 }
 
 char *expr1(){
@@ -114,8 +124,7 @@ char *expression(){
     }
     return tempvar;
 }
-
-char *term(){
+char *term() {
     char  *tempvar, *tempvar1 ;
     tempvar = factor();
     while(1){
