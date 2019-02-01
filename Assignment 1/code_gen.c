@@ -5,7 +5,6 @@
 
 void statements(){
     /*  statements -> statement statements | statement  */
-    char *tempvar;
     while(!match(EOI)){
         statement();
     }
@@ -13,7 +12,7 @@ void statements(){
 }
 
 void statement(){
-    char *tempvar, *tempvar1;
+    char *tempvar;
     char var[100];
     int i=0;
     while(i<yyleng){
@@ -30,9 +29,10 @@ void statement(){
                 fprintf(stderr, "%d: ';' expected\n", yylineno);
             }
             else{
-                printf("    %s <- %s", var, tempvar);
+                printf("    %s <- %s\n", var, tempvar);
                 advance();
             }
+            freename(tempvar);
         }        
     }
     if(match(WHILE)){
@@ -44,6 +44,7 @@ void statement(){
             statement();
             printf("\n}");
         }
+        freename(tempvar);
     }
     if(match(IF)){
         advance();
@@ -54,11 +55,11 @@ void statement(){
             statement();
             printf("\n}");
         }
+        freename(tempvar);
     }
     if(match(BEG)){
         advance();
         printf("begin { \n");
-        // stmt_list();
         while (!match(END)){
             statement();
         }
@@ -76,6 +77,8 @@ char *expr1(){
         tempvar2 = newname();
         tempvar1 = expression();
         printf("    %s <- %s = %s\n", tempvar2, tempvar, tempvar1);
+        freename(tempvar);
+        freename(tempvar1);
         return tempvar2;
     }
     else if(match(LT)){
@@ -83,6 +86,8 @@ char *expr1(){
         tempvar2 = newname();
         tempvar1 = expression();
         printf("    %s <- %s < %s\n", tempvar2, tempvar, tempvar1);
+        freename(tempvar);
+        freename(tempvar1);
         return tempvar2;
     }
     else if(match(GT)){
@@ -90,6 +95,8 @@ char *expr1(){
         tempvar2 = newname();
         tempvar1 = expression();
         printf("    %s <- %s > %s\n", tempvar2, tempvar, tempvar1);
+        freename(tempvar);
+        freename(tempvar1);
         return tempvar2;
     }
     return tempvar;
