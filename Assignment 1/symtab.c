@@ -2,6 +2,8 @@
 # include <string.h>
 # include <stdlib.h>
 
+FILE *inter, *assembly;
+
 typedef struct _map{
     char var[20];
     struct _map *next;
@@ -43,3 +45,7 @@ void insert(char *arr){
         }
     }
 }
+
+
+
+

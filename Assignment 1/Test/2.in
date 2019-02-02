@@ -1,13 +1,16 @@
 begin
 	begin
+        a := 2;
+        c := 5;
 		if a=2 then
+        begin
 			while c=4 do
 				begin
 					if a=6 then
 						b:=6;
 				end
+            if a=5 then
+	            b := 6;
+        end
 	end
-
-	if a=5 then
-	b:=6;
 end

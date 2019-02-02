@@ -1,23 +1,40 @@
-    t0 = 1
+begin { 
+begin { 
+    t0 = 2
     a <- t0
-    t0 = 1
-    b <- t0
-    t0 = 3
+    t0 = 5
     c <- t0
-    t0 = c
-    t2 = 0
-    t1 <- t0 > t2
-while (t1) do { 
+    t0 = a
+    t2 = 2
+    t1 <- t0 = t2
+if (t1) then { 
 begin { 
     t2 = c
-    t0 = b
-    t2 *= t0
-    b <- t2
-    t2 = c
-    t0 = 1
-    t2 -= t0
-    c <- t2
+    t3 = 4
+    t0 <- t2 = t3
+while (t0) do { 
+begin { 
+    t3 = a
+    t4 = 6
+    t2 <- t3 = t4
+if (t2) then { 
+    t4 = 6
+    b <- t4
 
+}
+} end 
+
+}    t0 = a
+    t4 = 5
+    t2 <- t0 = t4
+if (t2) then { 
+    t4 = 6
+    b <- t4
+
+}
 } end 
 
 }
+} end 
+
+} end 

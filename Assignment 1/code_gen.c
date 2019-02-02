@@ -1,18 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "lex.c"
 #include "name.c"
 #include "code_gen.h"
 #include "symtab.c"
- 
-FILE *inter, *assembly, *header;
+#include "labelstack.c"
 
 int label = 0;
 int labelstart = 0;
 int label_stacksize = 0;
 
 char *mapper(char *tempvar) {
-    int index = tempvar[1] - '0';
+    int index = 7 - (tempvar[1] - '0');
     return Registers[index];
 }
 
@@ -20,13 +20,20 @@ void statements(){
     /*  statements -> statement statements | statement  */
     inter = fopen("main.ic", "w");
     assembly = fopen("main.asm", "w");
-    header = fopen("main.h", "w");
-    fprintf(header, "org 100h\n");
+    fprintf(assembly, "ORG 100H\n");
 
     while(!match(EOI)){
         statement();
     }
-    return;
+    fclose(inter); 
+    map *temp = head;
+    fprintf(assembly, "RET\n");
+    while(temp != NULL){
+        fprintf(assembly, "%s DB ?\n", temp->var);
+        temp = temp->next;
+    }
+    fprintf(assembly, "END\n");
+    fclose(assembly); 
 }
 
 void statement(){
@@ -59,24 +66,17 @@ void statement(){
         advance();
         int cur;
         label++;
-        cur = label;
-        fprintf(assembly, "WHILELABEL%d: \n", cur);
-        label_stacksize++; 
+        push(label);
+        fprintf(assembly, "WHILELABEL%d: \n", top->data);
         tempvar = expr1();                            
         if(match(DO)){
             advance();          
             fprintf(inter, "while (%s) do { \n", tempvar);
             statement();
             fprintf(inter, "\n}");
-
-            fprintf(assembly, "JMP WHILELABEL%d\n", cur);
-            fprintf(assembly, "LABEL%d: \n", labelstart+label_stacksize);
-
-            label_stacksize--;
-            if (label_stacksize == 0) {
-                labelstart = label;
-            }
-             
+            fprintf(assembly, "JMP WHILELABEL%d\n", top->data);
+            fprintf(assembly, "LABEL%d: \n", top->data);
+            pop();     
         }
         freename(tempvar);
 
@@ -84,21 +84,15 @@ void statement(){
     if(match(IF)){
         advance();
         label++;
-        label_stacksize++;
+        push(label);
         tempvar = expr1();
         if(match(THEN)){
             advance();
             fprintf(inter, "if (%s) then { \n", tempvar);
-
             statement();
-            fprintf(inter, "\n}");
-            
-            fprintf(assembly, "LABEL%d: \n", labelstart+label_stacksize);
-            label_stacksize--;
-            if (label_stacksize == 0) {
-                labelstart = label;
-            }
-             
+            fprintf(inter, "\n}"); 
+            fprintf(assembly, "LABEL%d: \n", top->data);
+            pop();  
         }
         freename(tempvar);
     }
@@ -123,7 +117,7 @@ char *expr1(){
         tempvar1 = expression();
         fprintf(inter, "    %s <- %s = %s\n", tempvar2, tempvar, tempvar1);
         fprintf(assembly, "CMP %s, %s\n", mapper(tempvar), mapper(tempvar1));
-        fprintf(assembly, "JNE LABEL%d\n", labelstart + label_stacksize);
+        fprintf(assembly, "JNE LABEL%d\n", top->data);
         freename(tempvar);
         freename(tempvar1);
         return tempvar2;
@@ -134,7 +128,7 @@ char *expr1(){
         tempvar1 = expression();
         fprintf(inter, "    %s <- %s < %s\n", tempvar2, tempvar, tempvar1);
         fprintf(assembly, "CMP %s, %s\n", mapper(tempvar), mapper(tempvar1));
-        fprintf(assembly, "JGE LABEL%d\n", labelstart + label_stacksize);
+        fprintf(assembly, "JGE LABEL%d\n", top->data);
         freename(tempvar);
         freename(tempvar1);
         return tempvar2;
@@ -145,7 +139,7 @@ char *expr1(){
         tempvar1 = expression();
         fprintf(inter, "    %s <- %s > %s\n", tempvar2, tempvar, tempvar1);
         fprintf(assembly, "CMP %s, %s\n", mapper(tempvar), mapper(tempvar1));
-        fprintf(assembly, "JLE LABEL%d\n", labelstart + label_stacksize);
+        fprintf(assembly, "JLE LABEL%d\n", top->data);
         freename(tempvar);
         freename(tempvar1);
         return tempvar2;
@@ -164,7 +158,7 @@ char *expression(){
             advance();
             tempvar1 = term();
             fprintf(inter, "    %s += %s\n", tempvar, tempvar1);
-            fprintf(assembly, "ADC %s, %s\n", mapper(tempvar), mapper(tempvar1));
+            fprintf(assembly, "ADD %s, %s\n", mapper(tempvar), mapper(tempvar1));
             freename(tempvar1);
         }
         else if(match(MINUS)){
@@ -181,27 +175,28 @@ char *expression(){
 char *term() {
     char  *tempvar, *tempvar1 ;
     tempvar = factor();
-    // if (strcmp(mapper(tempvar),"AL") != 0)
-    //     fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
+    if (strcmp(mapper(tempvar),"AL") != 0)
+        fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
     while(1){
         if(match(TIMES)){ 
             advance();
             tempvar1 = term();
             fprintf(inter, "    %s *= %s\n", tempvar, tempvar1);
-            // fprintf(assembly, "MUL %s\n", mapper(tempvar1));
+            fprintf(assembly, "MUL %s\n", mapper(tempvar1));
             freename(tempvar1);
         }
         else if(match(DIV)){
             advance();
             tempvar1 = term();
             fprintf(inter, "    %s /= %s\n", tempvar, tempvar1);
-            // fprintf(assembly, "DIV %s\n", mapper(tempvar1));
+            fprintf(assembly, "MOV AH, 0\n");
+            fprintf(assembly, "DIV %s\n", mapper(tempvar1));
             freename(tempvar1);
         }
         else break;
     }
-    // if (strcmp(mapper(tempvar),"AL") != 0)
-    //     fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
+    if (strcmp(mapper(tempvar),"AL") != 0)
+        fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
     return tempvar;
 }
 
