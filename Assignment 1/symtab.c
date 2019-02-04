@@ -16,6 +16,7 @@ map *create_node(char *arr){
     map *entry = (map*)malloc(sizeof(map)); 
     entry->next = NULL;
     strcpy(entry->var, arr);
+    return entry;
 }
 
 

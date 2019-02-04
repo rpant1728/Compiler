@@ -49,7 +49,7 @@ void statement(){
         advance();
         if(match(ASS)){
             advance();
-            tempvar = expr1();
+            tempvar = expr1(0);
             if(!match(SEMI)){
                 fprintf(stderr, "%d: ';' expected\n", yylineno);
             }
@@ -64,11 +64,10 @@ void statement(){
     }
     if(match(WHILE)){
         advance();
-        int cur;
         label++;
         push(label);
         fprintf(assembly, "WHILELABEL%d: \n", top->data);
-        tempvar = expr1();                            
+        tempvar = expr1(1);                            
         if(match(DO)){
             advance();          
             fprintf(inter, "while (%s) do { \n", tempvar);
@@ -85,7 +84,7 @@ void statement(){
         advance();
         label++;
         push(label);
-        tempvar = expr1();
+        tempvar = expr1(1);
         if(match(THEN)){
             advance();
             fprintf(inter, "if (%s) then { \n", tempvar);
@@ -107,7 +106,7 @@ void statement(){
     }
 }
 
-char *expr1(){
+char *expr1(int flag){
     char *tempvar, *tempvar1, *tempvar2;
     tempvar = expression();
     // advance();
@@ -143,6 +142,10 @@ char *expr1(){
         freename(tempvar);
         freename(tempvar1);
         return tempvar2;
+    }
+    if (flag > 0) {
+        fprintf(assembly, "CMP %s, 0\n", mapper(tempvar));
+        fprintf(assembly, "JLE LABEL%d\n", top->data);
     }
     return tempvar;
 }
