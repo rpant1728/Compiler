@@ -8,8 +8,6 @@
 #include "labelstack.c"
 
 int label = 0;
-int labelstart = 0;
-int label_stacksize = 0;
 
 char *mapper(char *tempvar) {
     int index = 7 - (tempvar[1] - '0');
@@ -178,8 +176,16 @@ char *expression(){
 char *term() {
     char  *tempvar, *tempvar1 ;
     tempvar = factor();
-    if (strcmp(mapper(tempvar),"AL") != 0)
-        fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
+
+    int flag = 0;
+    if (match(TIMES) || match(DIV)) {
+        flag = 1;
+    }
+
+    if (flag > 0 && strcmp(mapper(tempvar),"AL") != 0) {
+        fprintf(assembly, "PUSH AL\n");
+        fprintf(assembly, "MOV AL, %s\n", mapper(tempvar));
+    }
     while(1){
         if(match(TIMES)){ 
             advance();
@@ -192,14 +198,19 @@ char *term() {
             advance();
             tempvar1 = term();
             fprintf(inter, "    %s /= %s\n", tempvar, tempvar1);
+            fprintf(assembly, "PUSH AH\n");
             fprintf(assembly, "MOV AH, 0\n");
             fprintf(assembly, "DIV %s\n", mapper(tempvar1));
+            fprintf(assembly, "POP AH\n");
             freename(tempvar1);
         }
         else break;
     }
-    if (strcmp(mapper(tempvar),"AL") != 0)
-        fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
+    if (flag > 0 && strcmp(mapper(tempvar),"AL") != 0) {
+        fprintf(assembly, "MOV %s, AL\n", mapper(tempvar));
+        fprintf(assembly, "POP AL\n");
+        
+    }
     return tempvar;
 }
 
