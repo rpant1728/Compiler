@@ -43,7 +43,7 @@ void statement(){
         i++;
     }
     var[i] = '\0';
-    if(match(NUM_OR_ID)){
+    if(match(ID)){
         advance();
         if(match(ASS)){
             advance();
@@ -52,15 +52,18 @@ void statement(){
                 fprintf(stderr, "%d: ';' expected\n", yylineno);
             }
             else{
-                fprintf(inter, "    %s <- %s\n", var, tempvar);
-                insert(var);
-                fprintf(assembly, "MOV %s, %s\n", var, mapper(tempvar));
+                char var2[100];
+                sprintf(var2, "_%s", var);
+                insert(var2);
+
+                fprintf(inter, "    %s <- %s\n", var2, tempvar);
+                fprintf(assembly, "MOV %s, %s\n", var2, mapper(tempvar));
                 advance();
             }
             freename(tempvar);
-        }        
+        }      
     }
-    if(match(WHILE)){
+    else if(match(WHILE)){
         advance();
         label++;
         push(label);
@@ -76,9 +79,8 @@ void statement(){
             pop();     
         }
         freename(tempvar);
-
     }
-    if(match(IF)){
+    else if(match(IF)){
         advance();
         label++;
         push(label);
@@ -93,7 +95,7 @@ void statement(){
         }
         freename(tempvar);
     }
-    if(match(BEG)){
+    else if(match(BEG)){
         advance();
         fprintf(inter, "begin { \n");
         while (!match(END)){
@@ -102,13 +104,17 @@ void statement(){
         fprintf(inter, "\n} end \n");
         advance();           
     }
+    else {
+        fprintf(stderr, "%d: Syntax error\n", yylineno);
+        terminate();
+    }
 }
 
 char *expr1(int flag){
     char *tempvar, *tempvar1, *tempvar2;
     tempvar = expression();
     // advance();
-    if(match(EQU)){
+    if(match(EQU) && flag > 0){
         advance();
         tempvar2 = newname();
         tempvar1 = expression();
@@ -119,7 +125,7 @@ char *expr1(int flag){
         freename(tempvar1);
         return tempvar2;
     }
-    else if(match(LT)){
+    else if(match(LT) && flag > 0){
         advance();
         tempvar2 = newname();
         tempvar1 = expression();
@@ -130,7 +136,7 @@ char *expr1(int flag){
         freename(tempvar1);
         return tempvar2;
     }
-    else if(match(GT)){
+    else if(match(GT) && flag > 0){
         advance();
         tempvar2 = newname();
         tempvar1 = expression();
@@ -183,14 +189,14 @@ char *term() {
     }
 
     if (flag > 0 && strcmp(mapper(tempvar),"AL") != 0) {
-        fprintf(assembly, "PUSH AL\n");
-        fprintf(assembly, "MOV AL, %s\n", mapper(tempvar));
+        fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
     }
     while(1){
         if(match(TIMES)){ 
             advance();
             tempvar1 = term();
             fprintf(inter, "    %s *= %s\n", tempvar, tempvar1);
+            fprintf(assembly, "MOV AH, 0\n");
             fprintf(assembly, "MUL %s\n", mapper(tempvar1));
             freename(tempvar1);
         }
@@ -198,18 +204,14 @@ char *term() {
             advance();
             tempvar1 = term();
             fprintf(inter, "    %s /= %s\n", tempvar, tempvar1);
-            fprintf(assembly, "PUSH AH\n");
             fprintf(assembly, "MOV AH, 0\n");
             fprintf(assembly, "DIV %s\n", mapper(tempvar1));
-            fprintf(assembly, "POP AH\n");
             freename(tempvar1);
         }
         else break;
     }
     if (flag > 0 && strcmp(mapper(tempvar),"AL") != 0) {
-        fprintf(assembly, "MOV %s, AL\n", mapper(tempvar));
-        fprintf(assembly, "POP AL\n");
-        
+        fprintf(assembly, "XCHG AL, %s\n", mapper(tempvar));
     }
     return tempvar;
 }
@@ -217,7 +219,7 @@ char *term() {
 char *factor(){
     char *tempvar;
 
-    if(match(NUM_OR_ID)){
+    if(match(NUM) || match(ID)){
 	/* Print the assignment instruction. The %0.*s conversion is a form of
 	 * %X.Ys, where X is the field width and Y is the maximum number of
 	 * characters that will be printed (even if the string is longer). I'm
@@ -226,8 +228,27 @@ char *factor(){
 	 * to print the string. The ".*" tells printf() to take the maximum-
 	 * number-of-characters count from the next argument (yyleng).
 	 */
-        fprintf(inter, "    %s = %0.*s\n", tempvar = newname(), yyleng, yytext);
-        fprintf(assembly, "MOV %s, %0.*s\n", mapper(tempvar), yyleng, yytext);
+        char var[100];
+        int i=0;
+        var[0] = '_';
+        while(i<yyleng){
+            var[i+1] = *(yytext+i);
+            i++;
+        }
+        var[i+1] = '\0';
+        map *temp = search(var);
+        if (match(ID) && temp == NULL) {
+            fprintf(stderr, "%d: Undeclared identifier\n", yylineno);            
+        }
+
+        if (match(ID)) {
+            fprintf(inter, "    %s = %s\n", tempvar = newname(), var);
+            fprintf(assembly, "MOV %s, %s\n", mapper(tempvar), var);
+        }
+        else if (match(NUM)) {
+            fprintf(inter, "    %s = %s\n", tempvar = newname(), (var+1));
+            fprintf(assembly, "MOV %s, %s\n", mapper(tempvar), (var+1));
+        }
         advance();
     }
     else if(match(LP)){
@@ -242,3 +263,4 @@ char *factor(){
 	    fprintf(stderr, "%d: Number or identifier expected\n", yylineno);
     return tempvar;
 }
+

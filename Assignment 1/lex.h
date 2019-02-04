@@ -16,8 +16,9 @@
 #define DO 15	    /* do */
 #define BEG 16	    /* begin */
 #define END 17	    /* end */
-#define NUM_OR_ID 18	/* Decimal Number or Identifier */
+#define NUM 18	/* Decimal Number or Identifier */
 #define ASS 19      /* assignment operator */
+#define ID 20
 
 extern char *yytext;
 extern int yyleng;

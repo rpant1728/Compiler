@@ -23,7 +23,7 @@ void expression(){
     /* expression  -> term expression'
      * expression' -> PLUS term expression' |  epsilon
      */
-    if( !legal_lookahead(NUM_OR_ID, LP, 0))
+    if( !legal_lookahead(NUM,ID, LP, 0))
 	    return;
     term();
     while(match(PLUS)){
@@ -33,7 +33,7 @@ void expression(){
 }
 
 void term(){
-    if(!legal_lookahead(NUM_OR_ID, LP, 0 ))
+    if(!legal_lookahead(NUM,ID, LP, 0 ))
 	    return;
     factor();
     while(match(TIMES)){
@@ -43,9 +43,9 @@ void term(){
 }
 
 void factor(){
-    if(!legal_lookahead(NUM_OR_ID, LP, 0 ))
+    if(!legal_lookahead(NUM,ID, LP, 0 ))
 	    return;
-    if(match(NUM_OR_ID))
+    if(match(NUM)|| match(ID))
         advance();
     else if(match(LP)){
         advance();

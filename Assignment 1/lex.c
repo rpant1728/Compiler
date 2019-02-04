@@ -7,6 +7,13 @@ char *yytext = ""; /* Lexeme (not '\0' terminated) */
 int yyleng = 0;    /* Lexeme length */
 int yylineno = 0;  /* Input line number */
 
+
+void terminate(){
+    remove("main.ic");
+    remove("main.asm");
+    exit(0);
+}
+
 int lex(void){
     static char input_buffer[1024];
     char *current;
@@ -71,7 +78,8 @@ int lex(void){
                         yyleng = 2;
                         return ASS;
                     }
-                    fprintf(stderr, "Syntax error\n");
+                    fprintf(stderr, "%d: Syntax error\n", yylineno);
+                    terminate();
                 }
                 else{
                     char arr[20];
@@ -82,6 +90,18 @@ int lex(void){
                         i++;
                     }
                     arr[i] = '\0';
+                    i = 0;
+                    if (isdigit(arr[0])) {
+                        while (arr[i] != '\0') {
+                            if (!isdigit(arr[i])) {
+                                fprintf(stderr, "%d: Invalid identifier name\n", yylineno);
+                                terminate();
+                            }
+                            i++;
+                        }
+                        yyleng = current - yytext;
+                        return NUM;
+                    }                        
                     if(strcmp(arr, "if") == 0){
                         yyleng = 2;
                         return IF;
@@ -111,7 +131,7 @@ int lex(void){
                         return END;
                     }
                     yyleng = current - yytext;
-                    return NUM_OR_ID;
+                    return ID;
                 }
                 break;
             }

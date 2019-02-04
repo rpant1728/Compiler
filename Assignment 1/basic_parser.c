@@ -54,7 +54,7 @@ factor(){
     /* factor   ->    NUM_OR_ID
      *          |     LP expression RP
      */
-    if(match(NUM_OR_ID))
+    if(match(ID) || match(NUM))
         advance();
 
     else if(match(LP)){
