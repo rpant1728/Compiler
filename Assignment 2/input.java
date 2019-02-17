@@ -19,9 +19,9 @@ class two extends one
 	} 
 } 
 
-class three extends two { three(){;} 
+public class three extends two { three(){;} 
 	three(int sd,int sa){;}
-	public void print_geek() 
+	public void print_geek(two jk) 
 	{ 
 		System.out.println("Geegeeks// fsdfsdfnsdkgsks"); 
 	} 
@@ -30,11 +30,13 @@ class three extends two { three(){;}
 // Drived class 
 public class Main 
 { 
-	public static void main(String[] args) 	{ three g = new three(10, ghs, dfs); 
+	public static void main(String[] args) 	{ three g = new three(); 
 		g.print_geek();
 		g.print_for(); 
 		g.print_geek(); 
-	} 
+	}
+	adfadf three kl, dfsdf, fdsfas;  
+	int three;
 	print_for()
 	;
 } 

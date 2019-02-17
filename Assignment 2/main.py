@@ -43,25 +43,28 @@ class Analyzer():
 
     def check(self, line, index, kind, args):
         matches = re.findall(self.regex, line)
-        if kind is "D":
+        if kind is "D" :
             for className in classDict:
-                for singleMatch in matches:
+                for singleMatch in matches: 
                     if className in singleMatch:
                         if len(matches)>0:
                             if match(kind, args):
                                 print(kind + " Line:" + str(index+1)+ " " + line.lstrip())
                             self.count = self.count + 1
                             return
+        elif kind is "O":
+            if(re.match(objReg, line)):
+                if re.match(objReg, line).groupdict()['c'] in classDict or re.match(objReg, line).groupdict()['c1'] in classDict:
+                    if match(kind, args):
+                        print(kind + " Line:" + str(index+1)+ " " + line.lstrip())
+                    self.count = self.count + 1
+                return                     
+                   
         else:
             if len(matches)>0:
                 if match(kind, args):
                     print(kind + " Line:" + str(index+1)+ " " + line.lstrip())
-                self.count = self.count + 1
-    # def check(self, line, index, kind, args):
-    #     if re.match(self.regex, line):
-    #         self.count = self.count + 1
-    #         if(match(kind, args)):
-    #             
+                self.count = self.count + 1       
 
 def analyze(args):
     objAnalyzer = Analyzer(objReg)
@@ -83,21 +86,17 @@ def analyze(args):
         classAnalyzer.check(line, index, "C", args) 
         constrAnalyzer.check(line, index, "D", args) 
         inhClassAnalyzer.check(line, index, "I", args)
-        # objAnalyzer.check(contents, "O", args)
-        # classAnalyzer.check(contents, "C", args) 
-        # constrAnalyzer.check(contents, "D", args) 
-        # inhClassAnalyzer.check(contents, "I", args)
 
     print("1) Object Declarations - " + str(objAnalyzer.count))
     print("2) Class Definitions - " + str(classAnalyzer.count))
     print("3) Constructor Definitions - " + str(constrAnalyzer.count))
     print("4) Inherited Class Definitions - " + str(inhClassAnalyzer.count))
 
-objReg = "\s*([$_a-zA-Z][$_a-zA-Z0-9]*)((\[\])*)(\s*)(<(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*),(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*)>)?(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*)=(\s*)new(\s+)([$_a-zA-Z][$_a-zA-Z0-9]*)\s*((\()|(\[))"
+str_ = "([$_a-zA-Z][$_a-zA-Z0-9]*)"
+objReg = "(.*?(?P<c>([$_a-zA-Z][$_a-zA-Z0-9]*))\s+[$_a-zA-Z][$_a-zA-Z0-9]*((\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)\s*;)|.*?(\s*([$_a-zA-Z][$_a-zA-Z0-9]*)((\[\])*)(\s*)(<(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*),(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*)>)?(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*)=(\s*)new(\s+)(?P<c1>([$_a-zA-Z][$_a-zA-Z0-9]*))\s*((\()|(\[)))"
 classReg = "\s*((public|private|protected)\s+)?class\s+([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*\s+)?(\s*implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*"
 str_str = "([$_a-zA-Z][$_a-zA-Z0-9]*\s+[$_a-zA-Z][$_a-zA-Z0-9]*)"
-str_ = "([$_a-zA-Z][$_a-zA-Z0-9]*)"
-constrReg = "\s*((public|private|protected)\s+)?" + str_ + "\s*" + "\(" + "("+str_str + "(\s*,\s*" + str_str + ")*)*\)\s*"
+constrReg = "\s*((public|private|protected)\s+)?" + str_ + "\s*" + "\(" + "("+str_str + "(\s*,\s*" + str_str + ")*)*\)\s*[^;]"
 inhClassReg = "\s*((public|private|protected)\s+)?class\s+([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*\s+)(\s*implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*"
 
 def main():
@@ -114,4 +113,3 @@ def main():
 if __name__ == '__main__':
     main()
 
-# \s*((public|private|protected)\s+)?([$_a-zA-Z][$_a-zA-Z0-9]*)\s*\((([$_a-zA-Z][$_a-zA-Z0-9]*\s+[$_a-zA-Z][$_a-zA-Z0-9]*)(\s*,\s*([$_a-zA-Z][$_a-zA-Z0-9]*\s+[$_a-zA-Z][$_a-zA-Z0-9]*))*)*\)\s*
