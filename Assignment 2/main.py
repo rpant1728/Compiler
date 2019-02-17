@@ -1,4 +1,4 @@
-import re, sys
+import re, sys, argparse
 
 # Objects declaration
 # Class definition
@@ -19,6 +19,13 @@ def comment_remover(text):
     )
     return re.sub(pattern, replacer, text)
 
+def match(kind, args):
+    if args.all:
+        return True
+    if (kind == 1 and args.objects) or (kind == 2 and args.classes) or (kind == 3 and args.constructors) or (kind == 4 and args.inherited_classes):
+        return True
+    return False
+
 class Analyzer():    
     def __init__(self, regex):
         self.regex = regex
@@ -30,27 +37,28 @@ class Analyzer():
     #     # for match in matches:
     #     #     print(match+"\n")
     #     self.count = self.count + len(matches)
-    def check(self, line):
+    def check(self, line, index, kind, args):
         if re.match(self.regex, line):
             self.count = self.count + 1
-            print(line)
+            if(match(kind, args)):
+                print("Line :" + str(index)+ " " + line)
 
-def analyze():
+def analyze(args):
     objAnalyzer = Analyzer(objReg)
     classAnalyzer = Analyzer(classReg)    
     constrAnalyzer = Analyzer(constrReg)
     inhClassAnalyzer = Analyzer(inhClassReg)
 
-    filename = sys.argv[1]
+    filename = args.filename
     f = open(filename, 'r')
     contents = f.read()
     contents = comment_remover(contents)
     lines = contents.split("\n")
-    for line in lines:
-        objAnalyzer.check(line)
-        classAnalyzer.check(line) 
-        constrAnalyzer.check(line) 
-        inhClassAnalyzer.check(line)
+    for index, line in enumerate(lines):
+        objAnalyzer.check(line, index, 1, args)
+        classAnalyzer.check(line, index, 2, args) 
+        constrAnalyzer.check(line, index, 3, args) 
+        inhClassAnalyzer.check(line, index, 4, args)
     # objAnalyzer.check(contents)
     # classAnalyzer.check(contents) 
     # constrAnalyzer.check(contents) 
@@ -69,10 +77,17 @@ constrReg = "\s*((public|private|protected)\s+)?" + str_ + "\s*" + "\(" + "("+st
 inhClassReg = "\s*((public|private|protected)\s+)?class\s+([$_a-zA-Z][$_a-zA-Z0-9]*)\s+(extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*\s+)(implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*"
 
 def main():
-    analyze()
+    parser = argparse.ArgumentParser(description='Java Analyzer')
+    parser.add_argument('-a', '--all', action='store_true', help="Print all declarations")
+    parser.add_argument('-o', '--objects', action='store_true', help="Print object declarations")
+    parser.add_argument('-c', '--classes', action='store_true', help="Print class declarations")
+    parser.add_argument('-d', '--constructors', action='store_true', help="Print constructor declarations")
+    parser.add_argument('-i', '--inherited_classes', action='store_true', help="Print inherited class declarations")
+    parser.add_argument('-f', '--filename', type=str, default='test.java', help="Input file")
+    args = parser.parse_args()
+    analyze(args)
 
 if __name__ == '__main__':
-    print(constrReg)
     main()
 
 
