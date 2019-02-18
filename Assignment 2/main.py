@@ -30,11 +30,9 @@ def match(kind, args):
         return True
     return False
 
-classDict=[]
-
 def matchClass(line):
     if re.match(classReg, line):
-        classDict.append((re.match("\s*((public|private|protected)\s+)?class\s+(?P<c>([$_a-zA-Z][$_a-zA-Z0-9]*))(\s*extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*\s+)?(\s*implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*",line).groupdict()['c']))
+        classDict.append((re.match("\s*((public|private|protected)\s+)?(static\s+)?class\s+(?P<c>([$_a-zA-Z][$_a-zA-Z0-9]*))(\s+extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*)?(\s+implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*",line).groupdict()['c']))
 
 class Analyzer():    
     def __init__(self, regex):
@@ -54,7 +52,7 @@ class Analyzer():
                             return
         elif kind is "O":
             if(re.match(objReg, line)):
-                if re.match(objReg, line).groupdict()['c'] in classDict or re.match(objReg, line).groupdict()['c1'] in classDict:
+                if re.match(objReg, line).groupdict()['c'] in classDict:
                     if match(kind, args):
                         print(kind + " Line:" + str(index+1)+ " " + line.lstrip())
                     self.count = self.count + 1
@@ -82,6 +80,8 @@ def analyze(args):
     lines = contents.split("\n")
     for index, line in enumerate(lines):
         matchClass(line)
+
+    for index, line in enumerate(lines):
         objAnalyzer.check(line, index, "O", args)
         classAnalyzer.check(line, index, "C", args) 
         constrAnalyzer.check(line, index, "D", args) 
@@ -93,19 +93,21 @@ def analyze(args):
     print("4) Inherited Class Definitions - " + str(inhClassAnalyzer.count))
 
 str_ = "([$_a-zA-Z][$_a-zA-Z0-9]*)"
-objReg = "(.*?(?P<c>([$_a-zA-Z][$_a-zA-Z0-9]*))\s+[$_a-zA-Z][$_a-zA-Z0-9]*((\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)\s*;)|.*?(\s*([$_a-zA-Z][$_a-zA-Z0-9]*)((\[\])*)(\s*)(<(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*),(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*)>)?(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*)=(\s*)new(\s+)(?P<c1>([$_a-zA-Z][$_a-zA-Z0-9]*))\s*((\()|(\[)))"
-classReg = "\s*((public|private|protected)\s+)?class\s+([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*\s+)?(\s*implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*"
-str_str = "([$_a-zA-Z][$_a-zA-Z0-9]*\s+[$_a-zA-Z][$_a-zA-Z0-9]*)"
-constrReg = "\s*((public|private|protected)\s+)?" + str_ + "\s*" + "\(" + "("+str_str + "(\s*,\s*" + str_str + ")*)*\)\s*[^;]"
-inhClassReg = "\s*((public|private|protected)\s+)?class\s+([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*\s+)(\s*implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*"
+objReg = ".*?(\s*(?P<c>([$_a-zA-Z][$_a-zA-Z0-9]*))((\[\])*)(\s*)(<(.*?)>)?(\s*)([$_a-zA-Z][$_a-zA-Z0-9]*)(\s*)(=|,|;))"
+classReg = "\s*((public|private|protected)\s+)?(static\s+)?class\s+([$_a-zA-Z][$_a-zA-Z0-9]*)(\s+extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*)?(\s+implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*"
+str_str = "([$_a-zA-Z][$_a-zA-Z0-9]*(\s*((\[\]\s*)|(\s+\[\]))?)\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*((\[\]\s*)|(\s+\[\])))?)"
+constrReg = "\s*((public|private|protected)\s+)?" + str_ + "\s*" + "\(" + "("+str_str + "(\s*,\s*" + str_str + ")*)*\)\s*([^;]|$)"
+inhClassReg = "\s*((public|private|protected)\s+)?class\s+([$_a-zA-Z][$_a-zA-Z0-9]*)(\s+extends\s+[$_a-zA-Z][$_a-zA-Z0-9]*)(\s+implements\s+[$_a-zA-Z][$_a-zA-Z0-9]*(\s*,\s*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?\s*"
+
+classDict=["Double","Byte","Integer","Long","Short","Float","Character","Boolean"]
 
 def main():
     parser = argparse.ArgumentParser(description='Java Analyzer')
     parser.add_argument('-a', '--all', action='store_true', help="Print all declarations")
-    parser.add_argument('-o', '--objects', action='store_true', help="Print object declarations")
-    parser.add_argument('-c', '--classes', action='store_true', help="Print class declarations")
-    parser.add_argument('-d', '--constructors', action='store_true', help="Print constructor declarations")
-    parser.add_argument('-i', '--inherited_classes', action='store_true', help="Print inherited class declarations")
+    parser.add_argument('-o', '--objects', action='store_true', help="Print all occurences of object declarations.")
+    parser.add_argument('-c', '--classes', action='store_true', help="Print all occurences of class declarations.")
+    parser.add_argument('-d', '--constructors', action='store_true', help="Print all occurences of constructor declarations.")
+    parser.add_argument('-i', '--inherited_classes', action='store_true', help="Print all occurences of inherited class declarations.")
     parser.add_argument('-f', '--filename', type=str, default='test.java', help="Input file")
     args = parser.parse_args()
     analyze(args)

@@ -27,7 +27,7 @@ public class three extends two { three(){;}
 	} 
 } 
 
-// Drived class 
+// Derived class 
 public class Main 
 { 
 	public static void main(String[] args) 	{ three g = new three(); 
@@ -35,7 +35,12 @@ public class Main
 		g.print_for(); 
 		g.print_geek(); 
 	}
-	adfadf three kl, dfsdf, fdsfas;  
+	three ob1;
+	two ob1,ob2=ob1;
+	two<Integer,Double> obj3;
+	
+		
+	three kl, dfsdf, fdsfas;  
 	int three;
 	print_for()
 	;
