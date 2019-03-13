@@ -94,7 +94,7 @@ public class AirlineProblem {
         private ArrayList<String> partners;
         
         //pre: data != null, data.length > 0
-        public Airline(String[] data){
+        public Airline (String[] data){
             assert data != null && data.length > 0 : "Failed precondition";
             name = data[0];
             partners = new ArrayList<String>();

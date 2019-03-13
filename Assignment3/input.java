@@ -45,3 +45,10 @@ public class Main
 	print_for()
 	;
 } 
+class five c{ 	class x { 
+	class p {
+
+}
+
+	}
+}
