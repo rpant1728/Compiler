@@ -1,0 +1,8 @@
+PROJECT < salary > (Employee) ;
+PROJECT < name, salary > (Employee) ;
+SELECT (Employee) < salary<200 > ;
+(Employee) CARTESIAN_PRODUCT (Department) ;
+PROJECT (Employee) <salary, name> ;
+(Employee) CARTESIAN_PRODUCT (Department) ;
+SELECT (Employee) < salary<200 > ;
+(Employee) CARTESIAN_PRODUCT (Department) ;
