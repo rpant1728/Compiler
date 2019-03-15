@@ -6,10 +6,10 @@
     char *array[100];
     int classIndex = 0;
     int objCount = 0;
-    char *objName[300];
+    char *objName;
     int objIndex=0;
     int constCount=0;
-    char *constName[500];
+    char *constructorName;
     int constIndex=0;
     int prevClassLineNo = -1;
     int prevInhLineNo = -1;
@@ -18,7 +18,13 @@
 %} 
 %% 
 (\/\/.*|\/\*(.*(\n*))\*\/|\".*\") ;
-((public|private|protected)[ \t\n]+)?class[ \t\n]+([$_a-zA-Z][$_a-zA-Z0-9]*)([ \t\n]+extends[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*)([ \t\n]+implements[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*,[ \t\n]*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?[ \t\n]* {
+((public|private|protected)[ \t\n]+)?class[ \t\n]+([$_a-zA-Z][$_a-zA-Z0-9]*)([ \t\n]+extends[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*)([ \t\n]+implements[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*,[ \t\n]*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?[ \t\n]*(\{)? {
+    if (yylineno != prevInhLineNo) {
+        inhCount++;
+        classCount++;
+        prevInhLineNo = yylineno;
+    }    
+
     int i=0;
     array[i] = strtok(yytext," \n\t\r{");
 
@@ -33,7 +39,7 @@
     i++;
     // strcpy(className[classIndex],array[i]);
      className[classIndex]= array[i];
-        // printf("clasname - %s\n",className[classIndex]);
+        printf("clasname - %s\n",className[classIndex]);
         for(int j=0;j<strlen(className[classIndex]);j++){
             if(className[classIndex][j]=='{'){
                 className[classIndex][j] = '\0';
@@ -42,8 +48,12 @@
         }
     classIndex++;
 }
-((public|private|protected)[ \t\n]+)?(static[ \t\n]+)?class[ \t\n]+([$_a-zA-Z][$_a-zA-Z0-9]*)([ \t\n]+extends[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*)?([ \t\n]+implements[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*,[ \t\n]*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?[ \t\n]* {
-        classCount++;
+((public|private|protected)[ \t\n]+)?(static[ \t\n]+)?class[ \t\n]+([$_a-zA-Z][$_a-zA-Z0-9]*)([ \t\n]+extends[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*)?([ \t\n]+implements[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*,[ \t\n]*[$_a-zA-Z][$_a-zA-Z0-9]*)*)?[ \t\n]*(\{)? {
+        if (yylineno != prevClassLineNo) {
+            classCount++;
+            prevClassLineNo = yylineno;
+        }    
+
         int i=0;
         array[i] = strtok(yytext," \n\t\r{");
 
@@ -74,7 +84,18 @@
         {
         array[++i] = strtok(NULL," \n\t\r{[<");
         }
-        objName[objIndex++] = array[0];
+        objName = array[0];
+        int j = 0;
+        while(className[j]!=NULL){
+            if(strcmp(className[j],objName)==0){
+                if (yylineno != prevObjLineNo) {
+                    objCount++;
+                    prevObjLineNo = yylineno;
+                }  
+                break;
+            }    
+            j++;
+        }
  }   
 
 ((public|private|protected)[ \t\n]+)?([$_a-zA-Z][$_a-zA-Z0-9]*)[ \t\n]*\((([$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\]))?)[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\])))?)([ \t\n]*,[ \t\n]*([$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\]))?)[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\])))?))*)*\)[ \t\n]*([^;]|$) {
@@ -84,21 +105,24 @@
     while(array[i]!=NULL) {
     array[++i] = strtok(NULL," \n\t\r(");
     }
-    constName[constIndex]=array[0];
+    constructorName=array[0];
     if (strcmp(array[0],"public")==0 || strcmp(array[0],"private")==0 || strcmp(array[0],"protected")==0){
-        constName[constIndex]=array[1];
+        constructorName=array[1];
     }
     constIndex++;
-    // int k=0;
-    // // printf("//%s\n", constructorName);
-    // while(className[k]!=NULL){
-    //     // printf("names-%s\n",className[k]);
-    //     if(strcmp(className[k], constructorName)==0){
-    //         constCount++;
-    //         break;
-    //     }
-    //     k++;
-    // }
+    int k=0;
+    // printf("//%s\n", constructorName);
+    while(className[k]!=NULL){
+        // printf("names-%s\n",className[k]);
+        if(strcmp(className[k], constructorName)==0){
+            if (yylineno != prevConstLineNo) {
+                    constCount++;
+                    prevConstLineNo = yylineno;
+            } 
+            break;
+        }
+        k++;
+    }
 
 }
 . ;
@@ -128,33 +152,21 @@ int main(){
         }
         i++;
     }  
-    i=0;
-    int j = 0;
-    while(objName[i]!=NULL){
-        j=0;
-        while(className[j]!=NULL){
-            if(strcmp(className[j],objName[i])==0){
-                objCount++;
-                break;
-            }    
-            j++;
-        }
-        i++;
-    }
-    i=0;
-    j = 0;
-    while(constName[i]!=NULL){
-        j=0;
-        while(className[j]!=NULL){
-            if(strcmp(className[j],constName[i])==0){
-                constCount++;
-                break;
-            }    
-            j++;
-        }
-        i++;
-    }
-    printf("Object def - %d\n",objCount);
-    printf("Class Count-%d\n Constructor Count-%d\nInheritance Class Count-%d\n" , classCount,constCount, inhCount); 
+    
+    // i=0;
+    // j = 0;
+    // while(constName[i]!=NULL){
+    //     j=0;
+    //     while(className[j]!=NULL){
+    //         if(strcmp(className[j],constName[i])==0){
+    //             constCount++;
+    //             break;
+    //         }    
+    //         j++;
+    //     }
+    //     i++;
+    // }
+    printf("Object Declarations - %d\n",objCount);
+    printf("Class Definitions - %d\nConstructor Definitions - %d\nInherited Class Definitions - %d\n", classCount, constCount, inhCount); 
     return 0; 
 } 
