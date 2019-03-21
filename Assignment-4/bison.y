@@ -44,7 +44,7 @@ S:
 ;
 
 Select:
-    SELECT LESS cond GREATER LP ID RP
+    SELECT LESS cond GREATER LP attr_list RP
 ;
 
 cond:
@@ -72,6 +72,7 @@ attr_list: attr_list COMMA ID
 Product: LP ID RP PRODUCT LP ID RP 
 ;
 Join: LP ID RP JOIN LESS cond2 GREATER LP ID RP
+    | LP ID RP JOIN LP ID RP
 ;
 cond2:
     cond3

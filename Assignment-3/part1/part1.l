@@ -24,7 +24,6 @@
         classCount++;
         prevInhLineNo = yylineno;
     }    
-
     int i=0;
     array[i] = strtok(yytext," \n\t\r{");
 
@@ -39,7 +38,7 @@
     i++;
     // strcpy(className[classIndex],array[i]);
      className[classIndex]= array[i];
-        printf("clasname - %s\n",className[classIndex]);
+        // printf("clasname - %s\n",className[classIndex]);
         for(int j=0;j<strlen(className[classIndex]);j++){
             if(className[classIndex][j]=='{'){
                 className[classIndex][j] = '\0';
@@ -79,6 +78,7 @@
     }
 ([ \t\n]*(([$_a-zA-Z][$_a-zA-Z0-9]*))((\[\])*)([ \t\n]*)(<(.*?)>)?([ \t\n]*)([$_a-zA-Z][$_a-zA-Z0-9]*)([ \t\n]*)(=|,|;)) {
         int i=0;
+
         array[i] = strtok(yytext," \n\t\r{[<");
         while(array[i]!=NULL)
         {
@@ -99,7 +99,6 @@
  }   
 
 ((public|private|protected)[ \t\n]+)?([$_a-zA-Z][$_a-zA-Z0-9]*)[ \t\n]*\((([$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\]))?)[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\])))?)([ \t\n]*,[ \t\n]*([$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\]))?)[ \t\n]+[$_a-zA-Z][$_a-zA-Z0-9]*([ \t\n]*((\[\][ \t\n]*)|([ \t\n]+\[\])))?))*)*\)[ \t\n]*([^;]|$) {
-    // printf("---%s---\n",yytext);
     int i=0;
     array[i] = strtok(yytext," \n\t\r(");
     while(array[i]!=NULL) {
