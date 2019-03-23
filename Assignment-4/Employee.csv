@@ -1,0 +1,4 @@
+id(int),name(char*),salary(int),age(int)
+1,Rohit Pant,100,20
+2,Kapil Goyal,10,30
+3,Samyak Jain,50,15

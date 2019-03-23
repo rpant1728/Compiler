@@ -1,15 +1,1 @@
-SELECT < salary<200 > (Employee) ;
-SELECT < name="John" AND salary<200 > (Employee) ;
-SELECT (Employee) < salary<200 >;
-
-PROJECT < salary> (Employee);
-PROJECT (Employee) <salary, name>;
-PROJECT < name, salary> (Employee) ;
-
-CARTESIAN_PRODUCT (Employee) (Department) ;
-(Employee) CARTESIAN_PRODUCT (Department) ;
-(Employee) CARTESIAN_PRODUCT;
-
-(Employee) EQUI_JOIN (Department) ;
-(Employee) EQUI_JOIN <Employee.empId = Department.eId>(Department) ;
-EQUI_JOIN (Employee) <Employee.empId = Department.eId>(Department) ;
+SELECT < salary < 200 > (Employee) ;

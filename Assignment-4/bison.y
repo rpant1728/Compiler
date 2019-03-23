@@ -5,6 +5,7 @@
 
 %{
 #include <bits/stdc++.h>
+# include "semantic.cpp"
 using namespace std;
 extern int yylex();
 extern int yyparse();
@@ -14,20 +15,23 @@ int yyerror(char *s);
 
 %}
 
-%token SELECT PROJECT PRODUCT JOIN LESS GREATER EQ LE GE NE AND OR DOT ID LP RP STRING NUM COMMA SEM
-
 %left OR
 %left AND
 
-%type <name> ID
-%type <number> NUM
-%type <str> STRING
-
 %union{
-	char name[20];
+	char *str;
     int number;
-    char str[32];
+    // char str[32];
+    char sym;
 }
+
+%token SELECT PROJECT PRODUCT JOIN LESS GREATER EQ LE GE NE AND OR DOT ID LP RP STRING NUM COMMA SEM
+
+%type <str> ID 
+%type <number> NUM
+// %type <str> STRING
+%type <sym> LESS GREATER EQ NE LE GE OP LP RP AND OR
+
 %start stmt_list
     
 %%
@@ -44,29 +48,29 @@ S:
 ;
 
 Select:
-    SELECT LESS cond GREATER LP attr_list RP
+    SELECT LESS cond GREATER LP ID RP {code($6);}
 ;
 
 cond:
     cond1
-    | cond AND cond1
+    | cond AND cond1 
     | cond OR cond1
 ;
 cond1: 
-    ID EQ STRING
-    | ID OP NUM    
+    ID EQ STRING 
+    | ID OP NUM {save_vars($1, $2, $3);}
 ;    
 OP:
-    LESS
-    | GREATER
-    | EQ
-    | LE
-    | GE
-    | NE
+    LESS {$$ = $1;}
+    | GREATER {$$ = $1;}
+    | EQ {$$ = $1;}
+    | LE {$$ = $1;}
+    | GE {$$ = $1;}
+    | NE {$$ = $1;}
 ;
 Project: PROJECT LESS attr_list GREATER LP ID RP
 ;
-attr_list: attr_list COMMA ID
+attr_list: attr_list COMMA ID 
     | ID
 ;
 Product: LP ID RP PRODUCT LP ID RP 
