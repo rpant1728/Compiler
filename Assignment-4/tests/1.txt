@@ -1,1 +1,1 @@
-SELECT < salary < 200 > (Employee) ;
+(Employee) CARTESIAN_PRODUCT (Department) ;

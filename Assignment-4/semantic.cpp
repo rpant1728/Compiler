@@ -19,6 +19,29 @@ void save_vars(char *str, char c, int val){
     op = c;
 }
 
+void code_prod(char *s, char *s1){
+    string str = s;
+    int flag = 1;
+    FILE *fp;
+    fp = fopen(str.append(".csv").c_str(), "r");
+    if (fp == NULL)
+        flag = 0;
+    fclose(fp);
+    str = s1;
+    fp = fopen(str.append(".csv").c_str(), "r");
+    if (fp == NULL)
+        flag = 0;
+    fclose(fp);
+    if(!flag){
+        cout << "Table not found" << endl;
+    }
+    else{
+        cout << "Both tables found" << endl;
+    }
+    FILE *f = fopen("code.c", "w");
+    fprintf(f, "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(){\n    FILE *fp, *fp1;\n    char *line = NULL, *line1 = NULL;\n    size_t len = 0, read, len1 = 0, read1;\n    int i=0;\n\n    fp = fopen(\"%s.csv\", \"r\");\n    if (fp == NULL)\n        exit(EXIT_FAILURE);\n\n    while ((read = getline(&line, &len, fp)) != -1) {\n        fp1 = fopen(\"%s.csv\", \"r\");\n        if (fp1 == NULL)\n            exit(EXIT_FAILURE);\n        int j=0;\n        while ((read1 = getline(&line1, &len1, fp1)) != -1) {\n            if(i==0 && j==0){\n                line = strtok(line, \"\\n\");\n                printf(\"%%s,%%s\" ,line, line1);\n                j++;\n                break;\n            }\n            else if(i!=0 && j!=0){\n                line = strtok(line, \"\\n\");\n                printf(\"%%s,%%s\" ,line, line1);\n            }\n            else if(i!=0 && j==0){\n                j++;\n                continue;\n            }\n            j++;\n        }\n        i++;\n    }\n\n    fclose(fp);\n    if (line)\n        free(line);\n    exit(EXIT_SUCCESS);\n    fclose(fp1);\n    if (line1)\n        free(line1);\n    exit(EXIT_SUCCESS);\n    return 0;\n}\n", s, s1);
+}
+
 void print(char *s){
     if(s[0] == 'A'){
         s = strtok(s, " ");

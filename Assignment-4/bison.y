@@ -73,7 +73,7 @@ Project: PROJECT LESS attr_list GREATER LP ID RP
 attr_list: attr_list COMMA ID 
     | ID
 ;
-Product: LP ID RP PRODUCT LP ID RP 
+Product: LP ID RP PRODUCT LP ID RP {code_prod($2, $6);}
 ;
 Join: LP ID RP JOIN LESS cond2 GREATER LP ID RP
     | LP ID RP JOIN LP ID RP

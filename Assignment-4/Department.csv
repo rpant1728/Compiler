@@ -1,0 +1,4 @@
+id(int),name(char*),employees(int)
+1,CSE,40
+2,ECE,20
+3,MNC,10
